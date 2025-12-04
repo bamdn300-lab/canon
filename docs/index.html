@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ESP32 WebSocket テスト</title>
+<style>
+body {
+  font-family: sans-serif;
+  margin: 20px;
+}
+button {
+  padding: 10px 20px;
+  font-size: 18px;
+}
+#log {
+  border: 1px solid #ccc;
+  padding: 10px;
+  height: 200px;
+  overflow-y: scroll;
+  white-space: pre-wrap;
+}
+</style>
+</head>
+<body>
+
+<h2>ESP32 WebSocket テスト</h2>
+
+<label>ESP32 の IP アドレス：</label>
+<input id="ip" type="text" size="20" placeholder="例: 192.168.1.21">
+<br><br>
+
+<button onclick="connectWS()">接続</button>
+<button onclick="sendMsg()">beep送信</button>
+
+<h3>ログ</h3>
+<div id="log"></div>
+
+<script>
+let ws;
+
+function log(t) {
+  document.querySelector("#log").textContent += t + "\n";
+}
+
+function connectWS() {
+  const ip = document.querySelector("#ip").value.trim();
+  if (!ip) {
+    alert("ESP32 の IP アドレスを入力してください");
+    return;
+  }
+
+  const url = `ws://${ip}:81/`;   // ★ ESP32 WebSocket の標準ポート 81
+
+  log("接続中: " + url);
+
+  ws = new WebSocket(url);
+
+  ws.onopen = () => {
+    log("WebSocket 接続成功");
+  };
+
+  ws.onmessage = (event) => {
+    log("受信: " + event.data);
+  };
+
+  ws.onerror = (err) => {
+    log("エラー: " + err);
+  };
+
+  ws.onclose = () => {
+    log("接続が閉じられました");
+  };
+}
+
+function sendMsg() {
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    alert("WebSocket が接続されていません");
+    return;
+  }
+  ws.send("beep");
+  log("送信: beep");
+}
+</script>
+
+</body>
+</html>
